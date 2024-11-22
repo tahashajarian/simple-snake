@@ -147,7 +147,7 @@ const run = () => {
 
 const createScoreDisplay = () => {
   const scoreContainer = document.createElement("div");
-  scoreContainer.id = "scoreContainer";
+  scoreContainer.id = "scoreContainerInGame";
 
   const currentScoreEl = document.createElement("div");
   currentScoreEl.id = "currentScore";
