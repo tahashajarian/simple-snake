@@ -1,9 +1,10 @@
-let direction = null;
-const speed = 100; // actully its opiside of seepd its kind of lazayng power :))))
-let lastRun = 0;
 const sizePlayGround = 400;
 const cellSize = 10;
 const xyCells = sizePlayGround / cellSize;
+
+let direction = null;
+const speed = 100; // Opposite of speed, a kind of laziness power :)
+let lastRun = 0;
 
 let stop = false;
 
@@ -19,6 +20,11 @@ const arrows = {
   down: "ArrowDown",
 };
 
+let currentScore = 0;
+let highestScore = localStorage.getItem("highestScore")
+  ? parseInt(localStorage.getItem("highestScore"))
+  : 0;
+
 window.addEventListener("keydown", (e) => {
   if (e.key === arrows.down && snakeDirection === arrows.up) return;
   if (e.key === arrows.up && snakeDirection === arrows.down) return;
@@ -28,6 +34,13 @@ window.addEventListener("keydown", (e) => {
 });
 
 const lost = () => {
+  if (currentScore > highestScore) {
+    highestScore = currentScore;
+    localStorage.setItem("highestScore", highestScore);
+  }
+  currentScore = 0;
+  updateScoreDisplay();
+
   document.querySelector("#lost").style.display = "flex";
   document.querySelector("#score").innerHTML = snake.length - 1;
   stop = true;
@@ -54,28 +67,24 @@ const update = () => {
         return lost();
       }
       moveSnake((sizePlayGround / cellSize) * -1);
-
       break;
     case arrows.down:
       if (yCell === xyCells - 1) {
         return lost();
       }
       moveSnake(sizePlayGround / cellSize);
-
       break;
     case arrows.right:
       if (xCell === xyCells - 1) {
         return lost();
       }
       moveSnake(1);
-
       break;
     case arrows.left:
       if (xCell === 0) {
         return lost();
       }
       moveSnake(-1);
-
       break;
     default:
       moveSnake(0);
@@ -87,6 +96,9 @@ const moveSnake = (move) => {
     if (snake[0] === food) {
       const lastsankepeice = snake[snake.length - 1];
       snake.push(lastsankepeice + move);
+
+      currentScore++;
+      updateScoreDisplay();
       putFoodOnPlayGround();
     }
     for (let i = snake.length - 1; i >= 1; i--) {
@@ -133,25 +145,53 @@ const run = () => {
   }
 };
 
+const createScoreDisplay = () => {
+  const scoreContainer = document.createElement("div");
+  scoreContainer.id = "scoreContainer";
+
+  const currentScoreEl = document.createElement("div");
+  currentScoreEl.id = "currentScore";
+  currentScoreEl.textContent = `Score: ${currentScore}`;
+  scoreContainer.appendChild(currentScoreEl);
+
+  const highestScoreEl = document.createElement("div");
+  highestScoreEl.id = "highestScore";
+  highestScoreEl.textContent = `High Score: ${highestScore}`;
+  scoreContainer.appendChild(highestScoreEl);
+
+  document.body.insertBefore(scoreContainer, playGround);
+};
+
+const updateScoreDisplay = () => {
+  document.querySelector("#currentScore").textContent = `Score: ${currentScore}`;
+  document.querySelector("#highestScore").textContent = `High Score: ${highestScore}`;
+};
+
 const preStart = () => {
   playGround = document.createElement("div");
   playGround.id = "playGround";
   playGround.style.width = sizePlayGround + "px";
   playGround.style.height = sizePlayGround + "px";
+  playGround.style.border = "1px solid black";
   document.body.appendChild(playGround);
+
+  createScoreDisplay();
+
   const middle = allCells / 2 + sizePlayGround / cellSize / 2 - 41;
   snake.push(middle);
   putFoodOnPlayGround();
   run();
 };
 
-preStart();
-
 const restart = () => {
   snake = [allCells / 2 + sizePlayGround / cellSize / 2 - 41];
   document.querySelector("#lost").style.display = "none";
   putFoodOnPlayGround();
   stop = false;
+  currentScore = 0;
   direction = null;
+  updateScoreDisplay();
   run();
 };
+
+preStart();
